@@ -1,4 +1,4 @@
-import { Suspense, Component, type ReactNode } from "react";
+import { Suspense, Component, useCallback, useRef, useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AddTodoForm } from "@/components/add-todo-form/add-todo-form";
 import { LoadingState } from "@/components/loading-state/loading-state";
@@ -33,16 +33,39 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
 }
 
 function TodoApp() {
-  const { todos, createMutation } = useTodos();
+  const { todos, createMutation, toggleMutation } = useTodos();
+  const [announcement, setAnnouncement] = useState("");
+  const announcementTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleToggle = useCallback(
+    (id: string, completed: boolean) => {
+      toggleMutation.mutate(
+        { id, completed },
+        {
+          onSuccess: () => {
+            if (announcementTimer.current) clearTimeout(announcementTimer.current);
+            setAnnouncement("");
+            announcementTimer.current = setTimeout(() => {
+              setAnnouncement(completed ? "Task completed" : "Task restored");
+            }, 50);
+          },
+        },
+      );
+    },
+    [toggleMutation],
+  );
 
   return (
     <>
+      <span role="status" aria-live="polite" className="sr-only">
+        {announcement}
+      </span>
       <AddTodoForm
         onSubmit={(text) => createMutation.mutateAsync(text)}
         isPending={createMutation.isPending}
       />
       <div className="mt-4">
-        <TodoList todos={todos} />
+        <TodoList todos={todos} onToggle={handleToggle} />
       </div>
     </>
   );

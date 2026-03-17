@@ -29,6 +29,25 @@ export async function createTodo(text: string, queryPool: QueryPool = pool): Pro
   };
 }
 
+export async function updateTodo(
+  id: string,
+  completed: boolean,
+  queryPool: QueryPool = pool,
+): Promise<Todo | null> {
+  const result = await queryPool.query(
+    "UPDATE todos SET completed = $2 WHERE id = $1 RETURNING id, text, completed, created_at",
+    [id, completed],
+  );
+  const row = result.rows[0];
+  if (!row) return null;
+  return {
+    id: row.id,
+    text: row.text,
+    completed: row.completed,
+    createdAt: row.created_at.toISOString(),
+  };
+}
+
 export async function deleteAllTodos(queryPool: QueryPool = pool): Promise<void> {
   await queryPool.query("DELETE FROM todos");
 }

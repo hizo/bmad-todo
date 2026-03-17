@@ -18,6 +18,7 @@ const app = Fastify({
 // Register plugins
 await app.register(fastifyCors, {
   origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
 });
 
 await app.register(fastifySwagger, {

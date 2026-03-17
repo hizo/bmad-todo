@@ -139,6 +139,106 @@ describe("todo-routes integration", () => {
     });
   });
 
+  describe("PATCH /api/todos/:id", () => {
+    it("returns 200 with completed: true when toggling to complete", async () => {
+      const createRes = await app.inject({
+        method: "POST",
+        url: "/api/todos",
+        payload: { text: "Toggle me" },
+      });
+      const { data: created } = createRes.json();
+
+      const response = await app.inject({
+        method: "PATCH",
+        url: `/api/todos/${created.id}`,
+        payload: { completed: true },
+      });
+
+      assert.equal(response.statusCode, 200);
+
+      const body = response.json();
+      assert.ok("data" in body);
+      assert.equal(body.data.id, created.id);
+      assert.equal(body.data.text, "Toggle me");
+      assert.equal(body.data.completed, true);
+      assert.equal(typeof body.data.createdAt, "string");
+    });
+
+    it("returns 200 with completed: false when toggling back to incomplete", async () => {
+      const createRes = await app.inject({
+        method: "POST",
+        url: "/api/todos",
+        payload: { text: "Toggle back" },
+      });
+      const { data: created } = createRes.json();
+
+      await app.inject({
+        method: "PATCH",
+        url: `/api/todos/${created.id}`,
+        payload: { completed: true },
+      });
+
+      const response = await app.inject({
+        method: "PATCH",
+        url: `/api/todos/${created.id}`,
+        payload: { completed: false },
+      });
+
+      assert.equal(response.statusCode, 200);
+      assert.equal(response.json().data.completed, false);
+    });
+
+    it("returns 404 with NOT_FOUND for non-existent UUID", async () => {
+      const response = await app.inject({
+        method: "PATCH",
+        url: "/api/todos/00000000-0000-0000-0000-000000000000",
+        payload: { completed: true },
+      });
+
+      assert.equal(response.statusCode, 404);
+
+      const body = response.json();
+      assert.ok("error" in body);
+      assert.equal(body.error.code, "NOT_FOUND");
+      assert.equal(typeof body.error.message, "string");
+    });
+
+    it("returns 400 with VALIDATION_ERROR for missing completed field", async () => {
+      const createRes = await app.inject({
+        method: "POST",
+        url: "/api/todos",
+        payload: { text: "Valid todo" },
+      });
+      const { data: created } = createRes.json();
+
+      const response = await app.inject({
+        method: "PATCH",
+        url: `/api/todos/${created.id}`,
+        payload: {},
+      });
+
+      assert.equal(response.statusCode, 400);
+
+      const body = response.json();
+      assert.ok("error" in body);
+      assert.equal(body.error.code, "VALIDATION_ERROR");
+    });
+
+    it("returns 400 for non-UUID id param", async () => {
+      const response = await app.inject({
+        method: "PATCH",
+        url: "/api/todos/not-a-uuid",
+        payload: { completed: true },
+      });
+
+      assert.equal(response.statusCode, 400);
+
+      const body = response.json();
+      assert.ok("error" in body);
+      assert.equal(body.error.code, "VALIDATION_ERROR");
+    });
+  });
+
   describe("GET /api/todos", () => {
     it("returns 200 with empty array when no todos exist", async () => {
       const response = await app.inject({

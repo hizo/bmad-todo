@@ -9,6 +9,23 @@ export const todoSchema = {
   required: ["id", "text", "completed", "createdAt"],
 } as const;
 
+export const updateTodoBodySchema = {
+  type: "object",
+  properties: {
+    completed: { type: "boolean" },
+  },
+  required: ["completed"],
+  additionalProperties: false,
+} as const;
+
+export const todoIdParamsSchema = {
+  type: "object",
+  properties: {
+    id: { type: "string", format: "uuid" },
+  },
+  required: ["id"],
+} as const;
+
 export const apiResponseSchema = (itemSchema: Record<string, unknown>) => ({
   type: "object",
   properties: {
