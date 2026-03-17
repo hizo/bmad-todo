@@ -297,8 +297,8 @@ So that I can track what's done and what's left.
 **Then** accessibility score is 100, LCP is under 2.5s, CLS is under 0.1
 
 **Given** the PATCH endpoint is implemented
-**When** I sync the Postman collection via MCP
-**Then** the PATCH /api/todos/:id endpoint is documented with request/response examples
+**When** I update the OpenAPI spec file via `mcp__postman__updateSpecFile` AND sync the collection via `mcp__postman__syncCollectionWithSpec`
+**Then** the PATCH /api/todos/:id endpoint is documented with request/response examples in the Postman collection
 
 ### Story 2.2: Delete Todo
 
@@ -345,8 +345,8 @@ So that I can remove tasks that are no longer relevant.
 **Then** accessibility score is 100, LCP is under 2.5s, CLS is under 0.1
 
 **Given** the DELETE endpoint is implemented
-**When** I sync the Postman collection via MCP
-**Then** the DELETE /api/todos/:id endpoint is documented with request/response examples
+**When** I update the OpenAPI spec file via `mcp__postman__updateSpecFile` AND sync the collection via `mcp__postman__syncCollectionWithSpec`
+**Then** the DELETE /api/todos/:id endpoint is documented with request/response examples in the Postman collection
 
 ## Epic 3: Polished Experience & Error Resilience
 
