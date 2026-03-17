@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bmad-todo — Design Direction Mockups</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    min-height: 100vh;
+  }
+
+  /* Navigation */
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 12px 24px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    z-index: 100;
+    flex-wrap: wrap;
+  }
+  .nav-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-right: 16px;
+  }
+  .nav button {
+    padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    background: transparent;
+    color: #ccc;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav button:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .nav button.active { background: #3B82F6; border-color: #3B82F6; color: #fff; }
+
+  /* Mockup Container */
+  .mockups { padding-top: 70px; }
+  .mockup-section {
+    display: none;
+    min-height: calc(100vh - 70px);
+    padding: 32px 24px;
+  }
+  .mockup-section.active { display: block; }
+  .mockup-label {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .mockup-label h2 { font-size: 20px; color: #fff; margin-bottom: 4px; }
+  .mockup-label p { font-size: 14px; color: #999; }
+
+  /* Phone Frame */
+  .frame-row {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .frame-wrapper { text-align: center; }
+  .frame-wrapper .state-label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .phone-frame {
+    width: 375px;
+    height: 700px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  /* ========== DIRECTION A: Clean Minimal ========== */
+  .dir-a { background: #FFFFFF; color: #111827; }
+  .dir-a .app-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid #E5E7EB;
+  }
+  .dir-a .app-title { font-size: 20px; font-weight: 700; color: #111827; }
+  .dir-a .input-area { padding: 16px 20px; border-bottom: 1px solid #E5E7EB; }
+  .dir-a .input-field {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #111827;
+    background: #F9FAFB;
+  }
+  .dir-a .input-field::placeholder { color: #9CA3AF; }
+  .dir-a .todo-list { padding: 8px 0; }
+  .dir-a .todo-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    gap: 12px;
+    border-bottom: 1px solid #F3F4F6;
+  }
+  .dir-a .checkbox {
+    width: 20px; height: 20px;
+    border: 2px solid #D1D5DB;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dir-a .checkbox.checked {
+    background: #10B981;
+    border-color: #10B981;
+    position: relative;
+  }
+  .dir-a .checkbox.checked::after {
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .dir-a .todo-text { flex: 1; font-size: 16px; line-height: 1.5; color: #111827; }
+  .dir-a .todo-text.completed { text-decoration: line-through; color: #9CA3AF; }
+  .dir-a .delete-btn {
+    font-size: 18px; color: #D1D5DB; cursor: pointer;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+  }
+  .dir-a .empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    color: #9CA3AF;
+  }
+  .dir-a .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+  .dir-a .empty-heading { font-size: 18px; font-weight: 500; color: #6B7280; margin-bottom: 8px; }
+  .dir-a .empty-body { font-size: 14px; color: #9CA3AF; }
+  .dir-a .error-banner {
+    margin: 12px 20px;
+    padding: 12px 16px;
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #DC2626;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dir-a .error-retry { color: #DC2626; font-weight: 600; text-decoration: underline; cursor: pointer; margin-left: auto; }
+
+  /* ========== DIRECTION B: Card-Based ========== */
+  .dir-b { background: #F3F4F6; color: #111827; }
+  .dir-b .app-header {
+    padding: 24px 20px 16px;
+    background: #FFFFFF;
+  }
+  .dir-b .app-title { font-size: 20px; font-weight: 700; color: #111827; }
+  .dir-b .app-subtitle { font-size: 13px; color: #9CA3AF; margin-top: 2px; }
+  .dir-b .input-area { padding: 16px 20px; background: #FFFFFF; margin-bottom: 8px; }
+  .dir-b .input-field {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    font-size: 16px;
+    color: #111827;
+    background: #FFFFFF;
+  }
+  .dir-b .input-field:focus { border-color: #3B82F6; }
+  .dir-b .todo-list { padding: 4px 16px; }
+  .dir-b .todo-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    gap: 12px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .dir-b .checkbox {
+    width: 22px; height: 22px;
+    border: 2px solid #D1D5DB;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .dir-b .checkbox.checked {
+    background: #10B981;
+    border-color: #10B981;
+    position: relative;
+  }
+  .dir-b .checkbox.checked::after {
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .dir-b .todo-text { flex: 1; font-size: 16px; line-height: 1.5; color: #111827; }
+  .dir-b .todo-text.completed { text-decoration: line-through; color: #9CA3AF; }
+  .dir-b .delete-btn {
+    font-size: 18px; color: #D1D5DB;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dir-b .empty-state { text-align: center; padding: 80px 40px; }
+  .dir-b .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .dir-b .empty-heading { font-size: 18px; font-weight: 500; color: #6B7280; margin-bottom: 8px; }
+  .dir-b .empty-body { font-size: 14px; color: #9CA3AF; }
+
+  /* ========== DIRECTION C: Borderless Minimal ========== */
+  .dir-c { background: #FFFFFF; color: #111827; }
+  .dir-c .app-header { padding: 32px 24px 20px; }
+  .dir-c .app-title { font-size: 28px; font-weight: 300; color: #374151; letter-spacing: -0.5px; }
+  .dir-c .input-area { padding: 0 24px 24px; }
+  .dir-c .input-field {
+    width: 100%;
+    padding: 12px 0;
+    border: none;
+    border-bottom: 2px solid #E5E7EB;
+    font-size: 16px;
+    color: #111827;
+    background: transparent;
+    outline: none;
+  }
+  .dir-c .input-field:focus { border-bottom-color: #3B82F6; }
+  .dir-c .todo-list { padding: 0; }
+  .dir-c .todo-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    gap: 16px;
+  }
+  .dir-c .checkbox {
+    width: 18px; height: 18px;
+    border: 1.5px solid #D1D5DB;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dir-c .checkbox.checked {
+    background: #10B981;
+    border-color: #10B981;
+    position: relative;
+  }
+  .dir-c .checkbox.checked::after {
+    content: '✓';
+    color: white;
+    font-size: 11px;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .dir-c .todo-text { flex: 1; font-size: 16px; line-height: 1.6; color: #374151; }
+  .dir-c .todo-text.completed { text-decoration: line-through; color: #D1D5DB; }
+  .dir-c .delete-btn {
+    font-size: 16px; color: #E5E7EB;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .dir-c .todo-item:hover .delete-btn { opacity: 1; }
+  .dir-c .empty-state { text-align: center; padding: 100px 40px; }
+  .dir-c .empty-heading { font-size: 16px; font-weight: 400; color: #9CA3AF; }
+
+  /* ========== DIRECTION D: Warm & Friendly ========== */
+  .dir-d { background: #FFFBF5; color: #1C1917; }
+  .dir-d .app-header {
+    padding: 24px 20px 16px;
+  }
+  .dir-d .app-title { font-size: 22px; font-weight: 700; color: #292524; }
+  .dir-d .app-greeting { font-size: 14px; color: #A8A29E; margin-top: 4px; }
+  .dir-d .input-area { padding: 8px 20px 16px; }
+  .dir-d .input-field {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #E7E5E4;
+    border-radius: 12px;
+    font-size: 16px;
+    color: #1C1917;
+    background: #FFFFFF;
+  }
+  .dir-d .todo-list { padding: 4px 0; }
+  .dir-d .todo-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    gap: 12px;
+  }
+  .dir-d .checkbox {
+    width: 22px; height: 22px;
+    border: 2px solid #D6D3D1;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dir-d .checkbox.checked {
+    background: #F59E0B;
+    border-color: #F59E0B;
+    position: relative;
+  }
+  .dir-d .checkbox.checked::after {
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .dir-d .todo-text { flex: 1; font-size: 16px; line-height: 1.5; color: #292524; }
+  .dir-d .todo-text.completed { text-decoration: line-through; color: #A8A29E; }
+  .dir-d .delete-btn { font-size: 18px; color: #D6D3D1; }
+  .dir-d .empty-state { text-align: center; padding: 80px 40px; }
+  .dir-d .empty-icon { font-size: 40px; margin-bottom: 16px; }
+  .dir-d .empty-heading { font-size: 18px; font-weight: 500; color: #78716C; margin-bottom: 8px; }
+  .dir-d .empty-body { font-size: 14px; color: #A8A29E; }
+
+  /* ========== DIRECTION E: Bold & Confident ========== */
+  .dir-e { background: #FFFFFF; color: #0F172A; }
+  .dir-e .app-header {
+    padding: 24px 20px 16px;
+    background: #0F172A;
+  }
+  .dir-e .app-title { font-size: 18px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.5px; }
+  .dir-e .input-area { padding: 20px; }
+  .dir-e .input-field {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #0F172A;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #0F172A;
+    background: #FFFFFF;
+  }
+  .dir-e .todo-list { padding: 0 20px; }
+  .dir-e .todo-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 0;
+    gap: 12px;
+    border-bottom: 2px solid #F1F5F9;
+  }
+  .dir-e .checkbox {
+    width: 20px; height: 20px;
+    border: 2px solid #0F172A;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .dir-e .checkbox.checked {
+    background: #0F172A;
+    position: relative;
+  }
+  .dir-e .checkbox.checked::after {
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .dir-e .todo-text { flex: 1; font-size: 16px; line-height: 1.5; color: #0F172A; font-weight: 500; }
+  .dir-e .todo-text.completed { text-decoration: line-through; color: #94A3B8; font-weight: 400; }
+  .dir-e .delete-btn { font-size: 18px; color: #CBD5E1; }
+  .dir-e .empty-state { text-align: center; padding: 80px 40px; }
+  .dir-e .empty-heading { font-size: 18px; font-weight: 700; color: #0F172A; margin-bottom: 8px; }
+  .dir-e .empty-body { font-size: 14px; color: #64748B; }
+
+  /* ========== DIRECTION F: Soft & Airy ========== */
+  .dir-f { background: #F8FAFC; color: #334155; }
+  .dir-f .app-header { padding: 32px 24px 16px; }
+  .dir-f .app-title { font-size: 22px; font-weight: 600; color: #334155; }
+  .dir-f .task-count { font-size: 13px; color: #94A3B8; margin-top: 4px; }
+  .dir-f .input-area { padding: 8px 24px 20px; }
+  .dir-f .input-field {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    font-size: 16px;
+    color: #334155;
+    background: #FFFFFF;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .dir-f .todo-list { padding: 4px 16px; }
+  .dir-f .todo-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    gap: 14px;
+    background: #FFFFFF;
+    border-radius: 16px;
+    margin-bottom: 10px;
+  }
+  .dir-f .checkbox {
+    width: 24px; height: 24px;
+    border: 2px solid #CBD5E1;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dir-f .checkbox.checked {
+    background: #6366F1;
+    border-color: #6366F1;
+    position: relative;
+  }
+  .dir-f .checkbox.checked::after {
+    content: '✓';
+    color: white;
+    font-size: 13px;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .dir-f .todo-text { flex: 1; font-size: 16px; line-height: 1.5; color: #334155; }
+  .dir-f .todo-text.completed { text-decoration: line-through; color: #CBD5E1; }
+  .dir-f .delete-btn { font-size: 18px; color: #E2E8F0; }
+  .dir-f .empty-state { text-align: center; padding: 80px 40px; }
+  .dir-f .empty-icon { font-size: 40px; margin-bottom: 16px; opacity: 0.6; }
+  .dir-f .empty-heading { font-size: 18px; font-weight: 500; color: #64748B; margin-bottom: 8px; }
+  .dir-f .empty-body { font-size: 14px; color: #94A3B8; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-title">bmad-todo Design Directions</span>
+  <button class="active" onclick="show('a')">A: Clean Minimal</button>
+  <button onclick="show('b')">B: Card-Based</button>
+  <button onclick="show('c')">C: Borderless</button>
+  <button onclick="show('d')">D: Warm</button>
+  <button onclick="show('e')">E: Bold</button>
+  <button onclick="show('f')">F: Soft & Airy</button>
+</nav>
+
+<div class="mockups">
+
+  <!-- DIRECTION A: Clean Minimal -->
+  <div id="dir-a" class="mockup-section active">
+    <div class="mockup-label">
+      <h2>Direction A: Clean Minimal</h2>
+      <p>Flat, borderless items with thin dividers. Maximum content focus. Closest to Apple Reminders.</p>
+    </div>
+    <div class="frame-row">
+      <div class="frame-wrapper">
+        <div class="state-label">Active List</div>
+        <div class="phone-frame dir-a">
+          <div class="app-header"><div class="app-title">bmad-todo</div></div>
+          <div class="input-area"><input class="input-field" placeholder="What needs to be done?" readonly></div>
+          <div class="todo-list">
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Finalize logo for client</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Review pull request #42</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Book dentist appointment</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox checked"></div><span class="todo-text completed">Send invoice to Acme Co</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox checked"></div><span class="todo-text completed">Update portfolio site</span><span class="delete-btn">×</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="frame-wrapper">
+        <div class="state-label">Empty State</div>
+        <div class="phone-frame dir-a">
+          <div class="app-header"><div class="app-title">bmad-todo</div></div>
+          <div class="input-area"><input class="input-field" placeholder="What needs to be done?" readonly></div>
+          <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <div class="empty-heading">No tasks yet</div>
+            <div class="empty-body">Add your first task above to get started</div>
+          </div>
+        </div>
+      </div>
+      <div class="frame-wrapper">
+        <div class="state-label">Error State</div>
+        <div class="phone-frame dir-a">
+          <div class="app-header"><div class="app-title">bmad-todo</div></div>
+          <div class="input-area"><input class="input-field" placeholder="What needs to be done?" readonly></div>
+          <div class="error-banner">
+            <span>⚠️</span>
+            <span>Couldn't save "Buy groceries"</span>
+            <span class="error-retry">Retry</span>
+          </div>
+          <div class="todo-list">
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Finalize logo for client</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Review pull request #42</span><span class="delete-btn">×</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIRECTION B: Card-Based -->
+  <div id="dir-b" class="mockup-section">
+    <div class="mockup-label">
+      <h2>Direction B: Card-Based</h2>
+      <p>Each todo is a distinct card with shadow. Gray background creates depth. More tactile, app-like feel.</p>
+    </div>
+    <div class="frame-row">
+      <div class="frame-wrapper">
+        <div class="state-label">Active List</div>
+        <div class="phone-frame dir-b">
+          <div class="app-header">
+            <div class="app-title">bmad-todo</div>
+            <div class="app-subtitle">3 active · 2 completed</div>
+          </div>
+          <div class="input-area"><input class="input-field" placeholder="What needs to be done?" readonly></div>
+          <div class="todo-list">
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Finalize logo for client</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Review pull request #42</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Book dentist appointment</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox checked"></div><span class="todo-text completed">Send invoice to Acme Co</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox checked"></div><span class="todo-text completed">Update portfolio site</span><span class="delete-btn">×</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="frame-wrapper">
+        <div class="state-label">Empty State</div>
+        <div class="phone-frame dir-b">
+          <div class="app-header">
+            <div class="app-title">bmad-todo</div>
+            <div class="app-subtitle">0 tasks</div>
+          </div>
+          <div class="input-area"><input class="input-field" placeholder="What needs to be done?" readonly></div>
+          <div class="empty-state">
+            <div class="empty-icon">✨</div>
+            <div class="empty-heading">All clear!</div>
+            <div class="empty-body">Add a task above to get things rolling</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIRECTION C: Borderless -->
+  <div id="dir-c" class="mockup-section">
+    <div class="mockup-label">
+      <h2>Direction C: Borderless Minimal</h2>
+      <p>Ultra-clean with no borders between items. Underline input. Delete only on hover. Maximum breathing room.</p>
+    </div>
+    <div class="frame-row">
+      <div class="frame-wrapper">
+        <div class="state-label">Active List</div>
+        <div class="phone-frame dir-c">
+          <div class="app-header"><div class="app-title">bmad-todo</div></div>
+          <div class="input-area"><input class="input-field" placeholder="What needs to be done?" readonly></div>
+          <div class="todo-list">
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Finalize logo for client</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Review pull request #42</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Book dentist appointment</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox checked"></div><span class="todo-text completed">Send invoice to Acme Co</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox checked"></div><span class="todo-text completed">Update portfolio site</span><span class="delete-btn">×</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="frame-wrapper">
+        <div class="state-label">Empty State</div>
+        <div class="phone-frame dir-c">
+          <div class="app-header"><div class="app-title">bmad-todo</div></div>
+          <div class="input-area"><input class="input-field" placeholder="What needs to be done?" readonly></div>
+          <div class="empty-state">
+            <div class="empty-heading">Type above to add your first task</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIRECTION D: Warm & Friendly -->
+  <div id="dir-d" class="mockup-section">
+    <div class="mockup-label">
+      <h2>Direction D: Warm & Friendly</h2>
+      <p>Warm cream background, amber accent. Approachable and inviting. Feels personal, like a notebook.</p>
+    </div>
+    <div class="frame-row">
+      <div class="frame-wrapper">
+        <div class="state-label">Active List</div>
+        <div class="phone-frame dir-d">
+          <div class="app-header">
+            <div class="app-title">bmad-todo</div>
+            <div class="app-greeting">Good afternoon ☀️</div>
+          </div>
+          <div class="input-area"><input class="input-field" placeholder="What's on your mind?" readonly></div>
+          <div class="todo-list">
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Finalize logo for client</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Review pull request #42</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Book dentist appointment</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox checked"></div><span class="todo-text completed">Send invoice to Acme Co</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox checked"></div><span class="todo-text completed">Update portfolio site</span><span class="delete-btn">×</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="frame-wrapper">
+        <div class="state-label">Empty State</div>
+        <div class="phone-frame dir-d">
+          <div class="app-header">
+            <div class="app-title">bmad-todo</div>
+            <div class="app-greeting">Good afternoon ☀️</div>
+          </div>
+          <div class="input-area"><input class="input-field" placeholder="What's on your mind?" readonly></div>
+          <div class="empty-state">
+            <div class="empty-icon">🌿</div>
+            <div class="empty-heading">Nothing here yet</div>
+            <div class="empty-body">Your task list is a blank page — start writing</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIRECTION E: Bold & Confident -->
+  <div id="dir-e" class="mockup-section">
+    <div class="mockup-label">
+      <h2>Direction E: Bold & Confident</h2>
+      <p>Dark header, strong borders, square checkboxes. Professional and direct. No-nonsense productivity.</p>
+    </div>
+    <div class="frame-row">
+      <div class="frame-wrapper">
+        <div class="state-label">Active List</div>
+        <div class="phone-frame dir-e">
+          <div class="app-header"><div class="app-title">BMAD-TODO</div></div>
+          <div class="input-area"><input class="input-field" placeholder="Add a task..." readonly></div>
+          <div class="todo-list">
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Finalize logo for client</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Review pull request #42</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Book dentist appointment</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox checked"></div><span class="todo-text completed">Send invoice to Acme Co</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox checked"></div><span class="todo-text completed">Update portfolio site</span><span class="delete-btn">×</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="frame-wrapper">
+        <div class="state-label">Empty State</div>
+        <div class="phone-frame dir-e">
+          <div class="app-header"><div class="app-title">BMAD-TODO</div></div>
+          <div class="input-area"><input class="input-field" placeholder="Add a task..." readonly></div>
+          <div class="empty-state">
+            <div class="empty-heading">No tasks.</div>
+            <div class="empty-body">Type above to add one.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIRECTION F: Soft & Airy -->
+  <div id="dir-f" class="mockup-section">
+    <div class="mockup-label">
+      <h2>Direction F: Soft & Airy</h2>
+      <p>Rounded cards, pill-shaped input, indigo accent. Gentle and modern. Approachable with personality.</p>
+    </div>
+    <div class="frame-row">
+      <div class="frame-wrapper">
+        <div class="state-label">Active List</div>
+        <div class="phone-frame dir-f">
+          <div class="app-header">
+            <div class="app-title">bmad-todo</div>
+            <div class="task-count">3 tasks remaining</div>
+          </div>
+          <div class="input-area"><input class="input-field" placeholder="What needs to be done?" readonly></div>
+          <div class="todo-list">
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Finalize logo for client</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Review pull request #42</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox"></div><span class="todo-text">Book dentist appointment</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox checked"></div><span class="todo-text completed">Send invoice to Acme Co</span><span class="delete-btn">×</span></div>
+            <div class="todo-item"><div class="checkbox checked"></div><span class="todo-text completed">Update portfolio site</span><span class="delete-btn">×</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="frame-wrapper">
+        <div class="state-label">Empty State</div>
+        <div class="phone-frame dir-f">
+          <div class="app-header">
+            <div class="app-title">bmad-todo</div>
+            <div class="task-count">0 tasks</div>
+          </div>
+          <div class="input-area"><input class="input-field" placeholder="What needs to be done?" readonly></div>
+          <div class="empty-state">
+            <div class="empty-icon">🎯</div>
+            <div class="empty-heading">Ready when you are</div>
+            <div class="empty-body">Add your first task to get started</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function show(dir) {
+  document.querySelectorAll('.mockup-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('dir-' + dir).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
