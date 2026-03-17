@@ -29,6 +29,10 @@ export async function createTodo(text: string, queryPool: QueryPool = pool): Pro
   };
 }
 
+export async function deleteAllTodos(queryPool: QueryPool = pool): Promise<void> {
+  await queryPool.query("DELETE FROM todos");
+}
+
 export async function getAllTodos(queryPool: QueryPool = pool): Promise<Todo[]> {
   const result = await queryPool.query(
     "SELECT id, text, completed, created_at FROM todos ORDER BY created_at ASC",

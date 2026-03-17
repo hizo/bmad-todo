@@ -5,11 +5,12 @@
     "test": "pnpm -r run test",
     "test:backend": "pnpm --filter @bmad-todo/backend test",
     "test:frontend": "pnpm --filter @bmad-todo/frontend test",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --config e2e/playwright.config.ts",
     "lint": "pnpm -r run lint",
     "lint:fix": "pnpm -r run lint:fix"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@playwright/test": "^1.48.0",
     "dotenv-cli": "^11.0.0"
   },

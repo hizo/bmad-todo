@@ -5,6 +5,7 @@ import Fastify from "fastify";
 import migrate from "node-pg-migrate";
 import { pool } from "./db/pool.js";
 import { errorHandler } from "./plugins/error-handler.js";
+import { deleteAllTodos } from "./db/queries.js";
 import { todoRoutes } from "./routes/todo-routes.js";
 
 const PORT = Number(process.env.BACKEND_PORT) || 3000;
@@ -41,6 +42,14 @@ app.register(todoRoutes, { prefix: "/api/todos" });
 app.get("/health", async () => {
   return { status: "ok" };
 });
+
+// Test-only reset endpoint — never registered in production
+if (process.env.NODE_ENV !== "production") {
+  app.delete("/test/reset", async (_request, reply) => {
+    await deleteAllTodos();
+    return reply.status(204).send();
+  });
+}
 
 // Start server
 const start = async () => {

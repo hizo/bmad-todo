@@ -1,7 +1,7 @@
 node_modules
 dist
 .env
-.env.test
+.env.*
 .DS_Store
 postgres_data
 

@@ -235,6 +235,14 @@ So that I can capture and review my tasks.
 **When** I run the Vitest unit tests
 **Then** tests pass for AddTodoForm (submit behavior, input clearing) and TodoList (rendering items)
 
+**Given** the frontend is functional
+**When** I run a Lighthouse audit via Chrome DevTools MCP
+**Then** the accessibility score is 100 and zero WCAG AA violations are reported
+
+**Given** the frontend is functional
+**When** I run a performance trace via Chrome DevTools MCP
+**Then** LCP is under 2.5s, CLS is under 0.1, and no critical network dependency issues are flagged
+
 ## Epic 2: Complete Task Lifecycle
 
 Users can mark todos complete/incomplete and delete them, with clear visual distinction between active and completed items. Each story includes tests and accessibility requirements.
@@ -276,6 +284,22 @@ So that I can track what's done and what's left.
 **When** I run the backend integration tests and frontend unit tests
 **Then** all tests pass, including toggle behavior and visual state changes
 
+**Given** the toggle feature is implemented end-to-end
+**When** I run the Playwright E2E tests
+**Then** tests verify toggling a todo complete/incomplete with visual change and persistence across refresh
+
+**Given** the toggle feature is rendered
+**When** I run an axe-core accessibility audit via Playwright
+**Then** zero WCAG AA violations are reported
+
+**Given** the toggle feature is functional
+**When** I run a Lighthouse audit and performance trace via Chrome DevTools MCP
+**Then** accessibility score is 100, LCP is under 2.5s, CLS is under 0.1
+
+**Given** the PATCH endpoint is implemented
+**When** I sync the Postman collection via MCP
+**Then** the PATCH /api/todos/:id endpoint is documented with request/response examples
+
 ### Story 2.2: Delete Todo
 
 As a user,
@@ -307,6 +331,22 @@ So that I can remove tasks that are no longer relevant.
 **Given** the DELETE endpoint and delete UI are implemented
 **When** I run the backend integration tests and frontend unit tests
 **Then** all tests pass, including deletion behavior and list update
+
+**Given** the delete feature is implemented end-to-end
+**When** I run the Playwright E2E tests
+**Then** tests verify deleting a todo removes it from the list and the deletion persists across refresh
+
+**Given** the delete UI is rendered
+**When** I run an axe-core accessibility audit via Playwright
+**Then** zero WCAG AA violations are reported
+
+**Given** the delete feature is functional
+**When** I run a Lighthouse audit and performance trace via Chrome DevTools MCP
+**Then** accessibility score is 100, LCP is under 2.5s, CLS is under 0.1
+
+**Given** the DELETE endpoint is implemented
+**When** I sync the Postman collection via MCP
+**Then** the DELETE /api/todos/:id endpoint is documented with request/response examples
 
 ## Epic 3: Polished Experience & Error Resilience
 
@@ -342,6 +382,18 @@ So that I know how to get started.
 **When** I run the Vitest unit tests
 **Then** tests pass for rendering the empty state and transitioning to/from it
 
+**Given** the empty state is implemented
+**When** I run the Playwright E2E tests
+**Then** tests verify the empty state displays when no todos exist and transitions correctly when a todo is added
+
+**Given** the empty state is rendered
+**When** I run an axe-core accessibility audit via Playwright
+**Then** zero WCAG AA violations are reported
+
+**Given** the empty state is functional
+**When** I run a Lighthouse audit and performance trace via Chrome DevTools MCP
+**Then** accessibility score is 100, LCP is under 2.5s, CLS is under 0.1
+
 ### Story 3.2: Loading State
 
 As a user,
@@ -367,6 +419,14 @@ So that I know the app is working.
 **Given** the LoadingState component is implemented
 **When** I run the Vitest unit tests
 **Then** tests pass for rendering the Suspense fallback correctly
+
+**Given** the loading state is rendered
+**When** I run an axe-core accessibility audit via Playwright
+**Then** zero WCAG AA violations are reported
+
+**Given** the loading state is functional
+**When** I run a Lighthouse audit and performance trace via Chrome DevTools MCP
+**Then** accessibility score is 100, LCP is under 2.5s, CLS is under 0.1
 
 ### Story 3.3: Error State & Retry
 
@@ -407,30 +467,42 @@ So that I can recover without confusion.
 **When** I run the Vitest unit tests
 **Then** tests pass for rendering error states, retry behavior, and mutation error rollback
 
-### Story 3.4: End-to-End Tests
+**Given** error handling is implemented end-to-end
+**When** I run the Playwright E2E tests
+**Then** tests verify error state on API failure, retry button functionality, and inline error recovery
+
+**Given** the error state is rendered
+**When** I run an axe-core accessibility audit via Playwright
+**Then** zero WCAG AA violations are reported
+
+**Given** the error state is functional
+**When** I run a Lighthouse audit and performance trace via Chrome DevTools MCP
+**Then** accessibility score is 100, LCP is under 2.5s, CLS is under 0.1
+
+### Story 3.4: E2E Test Suite Finalization & CI Integration
 
 As a developer,
-I want Playwright E2E tests covering all core user journeys,
-So that I can verify the full application works correctly end-to-end.
+I want to verify all E2E tests (written per-story) run together and integrate with CI,
+So that the full test suite is reliable and automated.
 
 **Acceptance Criteria:**
 
-**Given** Playwright is configured at the monorepo root
+**Given** E2E tests have been written per-story throughout Epics 1-3
 **When** I run `playwright test`
-**Then** all E2E test suites execute against the running application
+**Then** all E2E test suites execute together against the running application
 
-**Given** the todo-crud test suite
-**When** it runs
-**Then** it verifies: creating a todo, viewing todos in the list, toggling completion (visual change + persistence), deleting a todo, and persistence across page refresh
+**Given** the full E2E suite exists
+**When** I review test coverage
+**Then** all core user journeys are covered: create, view, toggle, delete, empty state, loading state, error state + retry, and persistence across refresh
 
-**Given** the error-handling test suite
-**When** it runs
-**Then** it verifies: error state on API failure, retry button functionality, and inline error recovery for failed mutations
+**Given** test coverage gaps exist
+**When** I identify missing scenarios
+**Then** I write additional E2E tests to fill gaps
 
-**Given** the empty state scenario
-**When** the test runs with no existing todos
-**Then** it verifies the empty state is displayed and transitions correctly when a todo is added
-
-**Given** all E2E tests exist
+**Given** all tests exist (unit, integration, E2E)
 **When** I run the full test suite with a single command
 **Then** backend tests (unit + integration), frontend tests (unit), and E2E tests all pass (NFR23)
+
+**Given** the test suite is complete
+**When** I configure CI (GitHub Actions)
+**Then** all tests run automatically on push/PR with proper reporting and artifact capture
