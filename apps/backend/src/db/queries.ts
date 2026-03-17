@@ -1,8 +1,15 @@
 import type { Todo } from "@bmad-todo/shared";
 import { pool } from "./pool.js";
 
+interface TodoRow {
+  id: string;
+  text: string;
+  completed: boolean;
+  created_at: Date;
+}
+
 interface QueryPool {
-  query(text: string, values?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
+  query(text: string, values?: unknown[]): Promise<{ rows: TodoRow[] }>;
 }
 
 export async function createTodo(text: string, queryPool: QueryPool = pool): Promise<Todo> {
@@ -11,6 +18,9 @@ export async function createTodo(text: string, queryPool: QueryPool = pool): Pro
     [text],
   );
   const row = result.rows[0];
+  if (!row) {
+    throw new Error("INSERT did not return a row");
+  }
   return {
     id: row.id,
     text: row.text,

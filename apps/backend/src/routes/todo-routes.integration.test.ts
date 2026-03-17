@@ -184,6 +184,39 @@ describe("todo-routes integration", () => {
       assert.equal(body.data[2].text, "Third");
     });
 
+    it("returns 500 with INTERNAL_ERROR when database fails", async () => {
+      // Drop the table to simulate a database error
+      await pool.query("DROP TABLE todos");
+
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/todos",
+      });
+
+      assert.equal(response.statusCode, 500);
+
+      const body = response.json();
+      assert.ok("error" in body);
+      assert.equal(body.error.code, "INTERNAL_ERROR");
+      assert.equal(typeof body.error.message, "string");
+
+      // No stack trace leaked
+      const bodyStr = JSON.stringify(body);
+      assert.ok(!bodyStr.includes(".ts:"));
+      assert.ok(!bodyStr.includes(".js:"));
+
+      // Recreate the table for subsequent tests
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS todos (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          text TEXT NOT NULL,
+          completed BOOLEAN NOT NULL DEFAULT false,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      await pool.query("CREATE INDEX IF NOT EXISTS idx_todos_created_at ON todos (created_at)");
+    });
+
     it("returns correctly shaped Todo objects in the array", async () => {
       await app.inject({
         method: "POST",

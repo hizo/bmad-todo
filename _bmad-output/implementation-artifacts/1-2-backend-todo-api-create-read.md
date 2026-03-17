@@ -1,6 +1,6 @@
 # Story 1.2: Backend Todo API — Create & Read
 
-Status: review
+Status: done
 
 ## Story
 
