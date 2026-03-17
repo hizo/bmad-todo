@@ -23,6 +23,8 @@ services:
       - "3000:3000"
     env_file:
       - .env
+      - path: .env.docker
+        required: false
     depends_on:
       postgres:
         condition: service_healthy

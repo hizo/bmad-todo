@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createTodo, getAllTodos } from "./queries.js";
 
-function makePool(rows: Record<string, unknown>[]) {
+function makePool(rows: { id: string; text: string; completed: boolean; created_at: Date }[]) {
   return {
     query: async () => ({ rows }),
   };
@@ -112,7 +112,7 @@ describe("getAllTodos", () => {
     const capturingPool = {
       query: async (sql: string) => {
         capturedSql = sql;
-        return { rows: [] as Record<string, unknown>[] };
+        return { rows: [] };
       },
     };
 

@@ -1,3 +1,4 @@
+import fastifyCors from "@fastify/cors";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import Fastify from "fastify";
@@ -14,6 +15,10 @@ const app = Fastify({
 });
 
 // Register plugins
+await app.register(fastifyCors, {
+  origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+});
+
 await app.register(fastifySwagger, {
   openapi: {
     info: {
