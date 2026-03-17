@@ -4,6 +4,7 @@ import Fastify from "fastify";
 import migrate from "node-pg-migrate";
 import { pool } from "./db/pool.js";
 import { errorHandler } from "./plugins/error-handler.js";
+import { todoRoutes } from "./routes/todo-routes.js";
 
 const PORT = Number(process.env.BACKEND_PORT) || 3000;
 const HOST = process.env.BACKEND_HOST || "0.0.0.0";
@@ -27,6 +28,9 @@ await app.register(fastifySwaggerUi, {
 });
 
 app.register(errorHandler);
+
+// Register routes
+app.register(todoRoutes, { prefix: "/api/todos" });
 
 // Health check
 app.get("/health", async () => {

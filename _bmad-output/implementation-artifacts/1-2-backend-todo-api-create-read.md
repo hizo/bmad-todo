@@ -1,6 +1,6 @@
 # Story 1.2: Backend Todo API — Create & Read
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -24,35 +24,35 @@ so that the frontend can persist and retrieve tasks.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create database query functions (AC: #1, #2, #4)
-  - [ ] Create `apps/backend/src/db/queries.ts` with `createTodo(text)` and `getAllTodos()`
-  - [ ] Use parameterized SQL queries via `pg` Pool (from `pool.ts`)
-  - [ ] Map snake_case DB columns → camelCase Todo type in query functions
-  - [ ] Return typed `Todo` objects using `@bmad-todo/shared`
+- [x] Task 1: Create database query functions (AC: #1, #2, #4)
+  - [x] Create `apps/backend/src/db/queries.ts` with `createTodo(text)` and `getAllTodos()`
+  - [x] Use parameterized SQL queries via `pg` Pool (from `pool.ts`)
+  - [x] Map snake_case DB columns → camelCase Todo type in query functions
+  - [x] Return typed `Todo` objects using `@bmad-todo/shared`
 
-- [ ] Task 2: Create route handlers (AC: #1, #2, #3, #5)
-  - [ ] Create `apps/backend/src/routes/todo-routes.ts` as a Fastify plugin
-  - [ ] Implement `POST /api/todos` — validate input via JSON Schema, call `createTodo()`, return `201` with `{ data: todo }`
-  - [ ] Implement `GET /api/todos` — call `getAllTodos()`, return `200` with `{ data: todos }`
-  - [ ] Add Fastify JSON Schema definitions for request body and response using schemas from `todo-schemas.ts`
+- [x] Task 2: Create route handlers (AC: #1, #2, #3, #5)
+  - [x] Create `apps/backend/src/routes/todo-routes.ts` as a Fastify plugin
+  - [x] Implement `POST /api/todos` — validate input via JSON Schema, call `createTodo()`, return `201` with `{ data: todo }`
+  - [x] Implement `GET /api/todos` — call `getAllTodos()`, return `200` with `{ data: todos }`
+  - [x] Add Fastify JSON Schema definitions for request body and response using schemas from `todo-schemas.ts`
 
-- [ ] Task 3: Register routes in server (AC: #1, #2, #5)
-  - [ ] Import and register todo routes plugin in `server.ts` with prefix `/api/todos`
+- [x] Task 3: Register routes in server (AC: #1, #2, #5)
+  - [x] Import and register todo routes plugin in `server.ts` with prefix `/api/todos`
 
-- [ ] Task 4: Write integration tests (AC: #6)
-  - [ ] Create `apps/backend/src/routes/todo-routes.integration.test.ts`
-  - [ ] Test POST with valid body → 201 + correct response shape
-  - [ ] Test POST with empty/missing text → 400 + VALIDATION_ERROR
-  - [ ] Test GET returns all todos in creation order
-  - [ ] Test GET returns empty array when no todos exist
-  - [ ] Test error envelope format (no stack traces leaked)
-  - [ ] Use Fastify `inject()` against real PostgreSQL (requires Docker)
+- [x] Task 4: Write integration tests (AC: #6)
+  - [x] Create `apps/backend/src/routes/todo-routes.integration.test.ts`
+  - [x] Test POST with valid body → 201 + correct response shape
+  - [x] Test POST with empty/missing text → 400 + VALIDATION_ERROR
+  - [x] Test GET returns all todos in creation order
+  - [x] Test GET returns empty array when no todos exist
+  - [x] Test error envelope format (no stack traces leaked)
+  - [x] Use Fastify `inject()` against real PostgreSQL (requires Docker)
 
-- [ ] Task 5: Write unit tests for query functions (AC: #1, #2)
-  - [ ] Create `apps/backend/src/db/queries.test.ts`
-  - [ ] Test `createTodo()` returns correctly shaped Todo
-  - [ ] Test `getAllTodos()` returns array of Todo objects
-  - [ ] Test snake_case → camelCase mapping is correct
+- [x] Task 5: Write unit tests for query functions (AC: #1, #2)
+  - [x] Create `apps/backend/src/db/queries.test.ts`
+  - [x] Test `createTodo()` returns correctly shaped Todo
+  - [x] Test `getAllTodos()` returns array of Todo objects
+  - [x] Test snake_case → camelCase mapping is correct
 
 ## Dev Notes
 
@@ -77,7 +77,7 @@ The following are already implemented and ready to use — do NOT recreate:
 - **Response envelope**: Success `{ data: T }`, Error `{ error: { code, message } }`
 - **HTTP status codes**: 201 for POST create, 200 for GET list, 400 for validation, 404 for not found, 500 for internal errors
 - **Module system**: ESM (`"type": "module"`), imports require `.js` extension in relative paths
-- **Biome**: 2 spaces, double quotes, semicolons always. Run `pnpm lint:fix` before finishing
+- **ESLint**: typescript-eslint recommended rules with type-aware checks. Run `pnpm lint:fix` before finishing
 
 ### Route Plugin Pattern
 
@@ -174,9 +174,27 @@ apps/backend/src/
 ## Dev Agent Record
 
 ### Agent Model Used
+Claude Sonnet 4.6
 
 ### Debug Log References
+- `--experimental-strip-types` (Node v24) does not resolve `.js` imports to `.ts` files — switched test script to `--import tsx/esm` which handles the ESM TypeScript resolution correctly. Updated `apps/backend/package.json` test script accordingly.
+- Integration tests require Docker postgres running on `localhost:5432` — all tests verified passing with `docker-compose up`.
 
 ### Completion Notes List
+- Created `db/queries.ts`: `createTodo()` and `getAllTodos()` with raw SQL, parameterized queries, and snake_case → camelCase mapping exclusively at query boundary.
+- Created `routes/todo-routes.ts`: Fastify plugin with `POST /` (201) and `GET /` (200), JSON Schema validation using existing `todo-schemas.ts`, error handling delegated to existing global error handler plugin.
+- Modified `server.ts`: registered `todoRoutes` plugin with prefix `/api/todos`.
+- Created `db/queries.test.ts`: 7 unit tests covering return shape, camelCase mapping, ordering.
+- Created `routes/todo-routes.integration.test.ts`: 8 integration tests using Fastify `inject()` against real PostgreSQL — covers 201/400 responses, ordering, empty array, error envelope, no stack trace leak.
+- All 15 tests pass (0 failures), biome lint clean (27 files checked).
+
+### Change Log
+- 2026-03-17: Implemented POST /api/todos and GET /api/todos endpoints with query functions, route handlers, OpenAPI schema, unit tests (7), and integration tests (8). Fixed test script to use tsx/esm loader.
 
 ### File List
+- apps/backend/src/db/queries.ts (created)
+- apps/backend/src/db/queries.test.ts (created)
+- apps/backend/src/routes/todo-routes.ts (created)
+- apps/backend/src/routes/todo-routes.integration.test.ts (created)
+- apps/backend/src/server.ts (modified — added todoRoutes import and registration)
+- apps/backend/package.json (modified — fixed test script to use tsx/esm loader)

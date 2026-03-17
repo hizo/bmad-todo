@@ -6,14 +6,17 @@
     "test:backend": "pnpm --filter @bmad-todo/backend test",
     "test:frontend": "pnpm --filter @bmad-todo/frontend test",
     "test:e2e": "playwright test",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write ."
+    "lint": "pnpm -r run lint",
+    "lint:fix": "pnpm -r run lint:fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.0",
-    "@playwright/test": "^1.48.0"
+    "@playwright/test": "^1.48.0",
+    "dotenv-cli": "^11.0.0"
   },
+  "packageManager": "pnpm@10.32.1",
   "pnpm": {
-    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

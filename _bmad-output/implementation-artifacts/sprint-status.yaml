@@ -45,7 +45,7 @@ development_status:
   # Epic 1: Create and View Todos
   epic-1: in-progress
   1-1-project-scaffolding-dev-environment: done
-  1-2-backend-todo-api-create-read: in-progress
+  1-2-backend-todo-api-create-read: review
   1-3-frontend-create-and-display-todos: backlog
   epic-1-retrospective: optional
 

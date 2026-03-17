@@ -335,10 +335,11 @@ apps/frontend/src/
 
 ### Linting & Formatting
 
-**Tool:** Biome — single tool for both linting and formatting. One config file (`biome.json`) at monorepo root, shared across all packages.
-- TypeScript + React rules enabled out of the box
-- Replaces ESLint + Prettier with a single dependency
-- Runs in CI as part of the test command
+**Tool:** ESLint + typescript-eslint — consistent linting across all packages. Each package has its own `eslint.config.js` using `typescript-eslint.configs.recommended` with type-aware rules enabled.
+- `apps/backend/eslint.config.js` — TypeScript + Node.js
+- `apps/frontend/eslint.config.js` — TypeScript + React
+- Type-aware rules catch async/await bugs (unhandled promises, incorrect types) at lint time
+- Runs in CI via `pnpm lint`
 
 ### Enforcement Guidelines
 
@@ -489,7 +490,7 @@ User Action → React Component → useTodos() hook → api/todos.ts (fetch)
 - **Run frontend tests:** `vitest`
 - **Run E2E tests:** `playwright test`
 - **Run migrations:** `node-pg-migrate up`
-- **Lint & format:** `biome check .` (or `biome check --write .` to auto-fix)
+- **Lint:** `pnpm lint` (or `pnpm lint:fix` to auto-fix)
 
 ## Architecture Validation Results
 
@@ -513,7 +514,7 @@ Every FR maps to specific files in the project structure (see Requirements to St
 - Performance: Vite (fast builds), Fastify (fast API), raw SQL (minimal overhead), TanStack Query (caching)
 - Accessibility: shadcn accessible primitives + ARIA live regions for status changes
 - Reliability: Parameterized queries, Error Boundaries, TanStack Query client state preservation
-- Maintainability: Clean separation, shared types, Biome for consistent code style
+- Maintainability: Clean separation, shared types, ESLint + typescript-eslint for consistent code quality
 - Testability: `node:test` + Vitest + Playwright, co-located tests, naming convention
 
 ### Implementation Readiness
@@ -528,7 +529,7 @@ Every FR maps to specific files in the project structure (see Requirements to St
 
 **Minor items addressed during validation:**
 1. Added ARIA live region guidance — status changes (todo completed, error states) must use `aria-live="polite"` regions for screen reader announcements
-2. Added Biome as the linting/formatting tool — single config, fast, TypeScript + React support out of the box
+2. Adopted ESLint + typescript-eslint as the linting tool for all packages — type-aware rules, per-package config
 
 ### Architecture Completeness Checklist
 

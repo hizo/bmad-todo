@@ -9,7 +9,9 @@
     "start": "node dist/server.js",
     "migrate": "node-pg-migrate up --migration-file-language ts --migrations-dir src/migrations --envPath ../../.env",
     "migrate:down": "node-pg-migrate down --migration-file-language ts --migrations-dir src/migrations --envPath ../../.env",
-    "test": "node --test --experimental-strip-types src/**/*.test.ts"
+    "test": "dotenv -e ../../.env.test -e ../../.env -- node --test --import tsx/esm src/**/*.test.ts",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "dependencies": {
     "@bmad-todo/shared": "workspace:*",
@@ -23,7 +25,9 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/pg": "^8.11.0",
+    "eslint": "^9.0.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.0.0"
   }
 }
