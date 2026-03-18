@@ -1,6 +1,7 @@
-import { Suspense, Component, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Suspense, Component, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AddTodoForm } from "@/components/add-todo-form/add-todo-form";
+import { ErrorState } from "@/components/error-state/error-state";
 import { LoadingState } from "@/components/loading-state/loading-state";
 import { TodoList } from "@/components/todo-list/todo-list";
 import { useTodos } from "@/hooks/use-todos";
@@ -22,11 +23,14 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
     };
   }
 
+  handleRetry = () => {
+    this.setState({ hasError: false, message: "" });
+    queryClient.resetQueries();
+  };
+
   render() {
     if (this.state.hasError) {
-      return (
-        <p className="text-sm text-destructive">Error: {this.state.message}</p>
-      );
+      return <ErrorState onRetry={this.handleRetry} />;
     }
     return this.props.children;
   }
@@ -77,6 +81,27 @@ function TodoApp() {
     };
   }, []);
 
+  const itemErrors = useMemo(() => {
+    const errors: Record<string, { message: string; retry: () => void }> = {};
+    if (toggleMutation.isError && toggleMutation.variables) {
+      const { id, completed } = toggleMutation.variables;
+      errors[id] = {
+        message: "Couldn't save",
+        retry: () => toggleMutation.mutate({ id, completed }),
+      };
+    }
+    if (deleteMutation.isError && deleteMutation.variables) {
+      const id = deleteMutation.variables;
+      errors[id] = {
+        message: "Couldn't save",
+        retry: () => deleteMutation.mutate(id),
+      };
+    }
+    return errors;
+  }, [toggleMutation, deleteMutation]);
+
+  const createError = createMutation.isError ? "Couldn't save — press Enter to try again" : null;
+
   return (
     <>
       <span role="status" aria-live="polite" className="sr-only">
@@ -85,9 +110,10 @@ function TodoApp() {
       <AddTodoForm
         onSubmit={(text) => createMutation.mutateAsync(text)}
         isPending={createMutation.isPending}
+        error={createError}
       />
       <div className="mt-4">
-        <TodoList todos={todos} onToggle={handleToggle} onDelete={handleDelete} />
+        <TodoList todos={todos} onToggle={handleToggle} onDelete={handleDelete} itemErrors={itemErrors} />
       </div>
     </>
   );

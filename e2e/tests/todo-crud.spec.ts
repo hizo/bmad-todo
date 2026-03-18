@@ -285,6 +285,102 @@ test.describe("Loading State", () => {
   });
 });
 
+test.describe("Error State & Retry", () => {
+  test.beforeEach(async ({ resetDb }) => {
+    await resetDb();
+  });
+
+  test("full-screen error state when API unreachable", async ({ page }) => {
+    // Block all API calls before navigating
+    await page.route("**/api/todos", (route) => route.abort());
+    await page.goto("/");
+
+    await expect(page.getByRole("alert")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Having trouble connecting" })).toBeVisible();
+    await expect(page.getByText("Check your connection and try again")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
+  });
+
+  test("retry button clears error and loads todos", async ({ page }) => {
+    // Block API initially
+    await page.route("**/api/todos", (route) => route.abort());
+    await page.goto("/");
+
+    await expect(page.getByRole("alert")).toBeVisible();
+
+    // Unblock API and click retry
+    await page.unroute("**/api/todos");
+    await page.getByRole("button", { name: "Retry" }).click();
+
+    // Error should clear, app should load
+    await expect(page.getByRole("alert")).not.toBeVisible();
+    await expect(page.getByRole("textbox", { name: "New todo" })).toBeVisible();
+  });
+
+  test("inline error on create failure with retry", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("textbox", { name: "New todo" })).toBeVisible();
+
+    // Block create API
+    await page.route("**/api/todos", (route) => {
+      if (route.request().method() === "POST") {
+        return route.fulfill({
+          status: 500,
+          contentType: "application/json",
+          body: JSON.stringify({ error: { code: "INTERNAL_ERROR", message: "fail" } }),
+        });
+      }
+      return route.continue();
+    });
+
+    const input = page.getByRole("textbox", { name: "New todo" });
+    await input.fill("Failing todo");
+    await input.press("Enter");
+
+    // Inline error should appear
+    await expect(page.getByText("Couldn't save")).toBeVisible();
+  });
+
+  test("toggle rollback on API failure", async ({ page }) => {
+    await page.goto("/");
+    const input = page.getByRole("textbox", { name: "New todo" });
+    await input.fill("Rollback test");
+    await input.press("Enter");
+    await expect(page.getByText("Rollback test")).toBeVisible();
+
+    // Block PATCH for toggle
+    await page.route("**/api/todos/*", (route) => {
+      if (route.request().method() === "PATCH") {
+        return route.fulfill({
+          status: 500,
+          contentType: "application/json",
+          body: JSON.stringify({ error: { code: "INTERNAL_ERROR", message: "fail" } }),
+        });
+      }
+      return route.continue();
+    });
+
+    const checkbox = page.getByRole("checkbox");
+    await checkbox.click();
+
+    // Should rollback — checkbox unchecked again after error
+    await expect(checkbox).not.toBeChecked();
+    // Inline error should appear
+    await expect(page.getByText("Couldn't save")).toBeVisible();
+  });
+
+  test("accessibility: no WCAG AA violations on error state", async ({
+    page,
+    makeAxeBuilder,
+  }) => {
+    await page.route("**/api/todos", (route) => route.abort());
+    await page.goto("/");
+    await expect(page.getByRole("alert")).toBeVisible();
+
+    await expectNoA11yViolations(makeAxeBuilder);
+  });
+});
+
 test.describe("Delete Todo", () => {
   test.beforeEach(async ({ resetDb, page }) => {
     await resetDb();
