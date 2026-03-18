@@ -48,6 +48,16 @@ export async function updateTodo(
   };
 }
 
+export async function deleteTodo(
+  id: string,
+  queryPool: QueryPool = pool,
+): Promise<{ id: string } | null> {
+  const result = await queryPool.query("DELETE FROM todos WHERE id = $1 RETURNING id", [id]);
+  const row = result.rows[0];
+  if (!row) return null;
+  return { id: row.id };
+}
+
 export async function deleteAllTodos(queryPool: QueryPool = pool): Promise<void> {
   await queryPool.query("DELETE FROM todos");
 }

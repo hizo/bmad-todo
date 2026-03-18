@@ -1,15 +1,18 @@
 import type { Todo } from "@bmad-todo/shared";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
 interface TodoItemProps {
   todo: Todo;
   onToggle: (id: string, completed: boolean) => void;
+  onDelete: (id: string) => void;
 }
 
-export function TodoItem({ todo, onToggle }: TodoItemProps) {
+export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
   return (
-    <label className="flex min-h-[48px] cursor-pointer items-center gap-3 rounded-lg bg-white px-3 py-3">
+    <div className="flex min-h-[48px] items-center gap-3 rounded-lg bg-white px-3 py-3">
       <Checkbox
         aria-labelledby={`todo-label-${todo.id}`}
         checked={todo.completed}
@@ -20,12 +23,21 @@ export function TodoItem({ todo, onToggle }: TodoItemProps) {
       <span
         id={`todo-label-${todo.id}`}
         className={cn(
-          "select-none transition-all duration-200 motion-reduce:transition-none",
+          "flex-1 select-none transition-all duration-200 motion-reduce:transition-none",
           todo.completed ? "text-[#78716C] line-through" : "text-[#292524]",
         )}
       >
         {todo.text}
       </span>
-    </label>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={`Delete ${todo.text}`}
+        onClick={() => onDelete(todo.id)}
+        className="size-11 shrink-0 text-stone-400 hover:text-stone-600 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+      >
+        <X />
+      </Button>
+    </div>
   );
 }

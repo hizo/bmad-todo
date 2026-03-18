@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { createTodo, getAllTodos, updateTodo } from "../db/queries.js";
+import { createTodo, deleteTodo, getAllTodos, updateTodo } from "../db/queries.js";
 import {
   apiErrorSchema,
   apiResponseSchema,
@@ -76,6 +76,35 @@ async function todoRoutes(fastify: FastifyInstance): Promise<void> {
           .send({ error: { code: "NOT_FOUND", message: "Todo not found" } });
       }
       return reply.status(200).send({ data: todo });
+    },
+  );
+
+  fastify.delete(
+    "/:id",
+    {
+      schema: {
+        params: todoIdParamsSchema,
+        response: {
+          200: apiResponseSchema({
+            type: "object",
+            properties: { id: { type: "string" } },
+            required: ["id"],
+          }),
+          400: apiErrorSchema,
+          404: apiErrorSchema,
+          500: apiErrorSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string };
+      const result = await deleteTodo(id);
+      if (result === null) {
+        return reply
+          .status(404)
+          .send({ error: { code: "NOT_FOUND", message: "Todo not found" } });
+      }
+      return reply.status(200).send({ data: { id: result.id } });
     },
   );
 }

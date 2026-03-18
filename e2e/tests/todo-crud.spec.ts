@@ -154,3 +154,80 @@ test.describe("Toggle Todo Completion", () => {
     await expectNoA11yViolations(makeAxeBuilder);
   });
 });
+
+test.describe("Delete Todo", () => {
+  test.beforeEach(async ({ resetDb, page }) => {
+    await resetDb();
+    await page.goto("/");
+  });
+
+  test("deleting a todo removes it from the list", async ({ page }) => {
+    const input = page.getByRole("textbox", { name: "New todo" });
+    await input.fill("Todo to delete");
+    await input.press("Enter");
+    await expect(page.getByText("Todo to delete")).toBeVisible();
+
+    await page.getByRole("button", { name: "Delete Todo to delete" }).click();
+
+    await expect(page.getByText("Todo to delete")).not.toBeVisible();
+  });
+
+  test("deletion persists across page refresh", async ({ page }) => {
+    const input = page.getByRole("textbox", { name: "New todo" });
+    await input.fill("Persist delete test");
+    await input.press("Enter");
+    await expect(page.getByText("Persist delete test")).toBeVisible();
+
+    await page.getByRole("button", { name: "Delete Persist delete test" }).click();
+    await expect(page.getByText("Persist delete test")).not.toBeVisible();
+
+    await page.reload();
+    await expect(page.getByRole("textbox", { name: "New todo" })).toBeVisible();
+
+    await expect(page.getByText("Persist delete test")).not.toBeVisible();
+  });
+
+  test("deleting one todo leaves others intact", async ({ page }) => {
+    const input = page.getByRole("textbox", { name: "New todo" });
+    await input.fill("Keep me");
+    await input.press("Enter");
+    await expect(page.getByText("Keep me")).toBeVisible();
+
+    await input.fill("Delete me");
+    await input.press("Enter");
+    await expect(page.getByText("Delete me")).toBeVisible();
+
+    await page.getByRole("listitem").filter({ hasText: "Delete me" }).getByRole("button").click();
+
+    await expect(page.getByText("Delete me")).not.toBeVisible();
+    await expect(page.getByText("Keep me")).toBeVisible();
+  });
+
+  test("aria-live announces 'Task deleted' after deletion", async ({ page }) => {
+    const input = page.getByRole("textbox", { name: "New todo" });
+    await input.fill("Announce delete");
+    await input.press("Enter");
+    await expect(page.getByText("Announce delete")).toBeVisible();
+
+    await page.getByRole("button", { name: "Delete Announce delete" }).click();
+    await expect(page.getByText("Announce delete")).not.toBeVisible();
+
+    const liveRegion = page.locator('[role="status"][aria-live="polite"]');
+    await expect(liveRegion).toHaveText("Task deleted");
+  });
+
+  test("accessibility: no WCAG AA violations after deleting a todo", async ({
+    page,
+    makeAxeBuilder,
+  }) => {
+    const input = page.getByRole("textbox", { name: "New todo" });
+    await input.fill("A11y delete test");
+    await input.press("Enter");
+    await expect(page.getByText("A11y delete test")).toBeVisible();
+
+    await page.getByRole("button", { name: "Delete A11y delete test" }).click();
+    await expect(page.getByText("A11y delete test")).not.toBeVisible();
+
+    await expectNoA11yViolations(makeAxeBuilder);
+  });
+});

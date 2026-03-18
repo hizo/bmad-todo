@@ -24,6 +24,17 @@ export async function createTodo(text: string): Promise<Todo> {
   return json.data;
 }
 
+export async function deleteTodo(id: string): Promise<{ id: string }> {
+  const res = await fetch(`${BASE_URL}/api/todos/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to delete todo: ${res.status} ${res.statusText}`);
+  }
+  const json: ApiResponse<{ id: string }> = await res.json();
+  return json.data;
+}
+
 export async function toggleTodo(id: string, completed: boolean): Promise<Todo> {
   const res = await fetch(`${BASE_URL}/api/todos/${id}`, {
     method: "PATCH",

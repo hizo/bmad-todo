@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-16
-last_updated: "2026-03-17T15:45:00Z"
+last_updated: "2026-03-17"
 project: bmad-todo
 project_key: NOKEY
 tracking_system: file-system
@@ -52,7 +52,7 @@ development_status:
   # Epic 2: Complete Task Lifecycle
   epic-2: in-progress
   2-1-toggle-todo-completion: done
-  2-2-delete-todo: backlog
+  2-2-delete-todo: done
   epic-2-retrospective: optional
 
   # Epic 3: Polished Experience & Error Resilience

@@ -239,6 +239,94 @@ describe("todo-routes integration", () => {
     });
   });
 
+  describe("DELETE /api/todos/:id", () => {
+    it("returns 200 with { data: { id } } for a valid existing todo", async () => {
+      const createRes = await app.inject({
+        method: "POST",
+        url: "/api/todos",
+        payload: { text: "Delete me" },
+      });
+      const { data: created } = createRes.json();
+
+      const response = await app.inject({
+        method: "DELETE",
+        url: `/api/todos/${created.id}`,
+      });
+
+      assert.equal(response.statusCode, 200);
+
+      const body = response.json();
+      assert.ok("data" in body);
+      assert.equal(body.data.id, created.id);
+      assert.equal(Object.keys(body.data).length, 1, "response data should only have id");
+    });
+
+    it("returns 404 with NOT_FOUND when deleting the same todo again", async () => {
+      const createRes = await app.inject({
+        method: "POST",
+        url: "/api/todos",
+        payload: { text: "Delete me once" },
+      });
+      const { data: created } = createRes.json();
+
+      await app.inject({ method: "DELETE", url: `/api/todos/${created.id}` });
+
+      const response = await app.inject({
+        method: "DELETE",
+        url: `/api/todos/${created.id}`,
+      });
+
+      assert.equal(response.statusCode, 404);
+
+      const body = response.json();
+      assert.ok("error" in body);
+      assert.equal(body.error.code, "NOT_FOUND");
+      assert.equal(typeof body.error.message, "string");
+    });
+
+    it("returns 404 with NOT_FOUND for a non-existent UUID", async () => {
+      const response = await app.inject({
+        method: "DELETE",
+        url: "/api/todos/00000000-0000-0000-0000-000000000000",
+      });
+
+      assert.equal(response.statusCode, 404);
+
+      const body = response.json();
+      assert.ok("error" in body);
+      assert.equal(body.error.code, "NOT_FOUND");
+    });
+
+    it("returns 400 with VALIDATION_ERROR for non-UUID id param", async () => {
+      const response = await app.inject({
+        method: "DELETE",
+        url: "/api/todos/not-a-uuid",
+      });
+
+      assert.equal(response.statusCode, 400);
+
+      const body = response.json();
+      assert.ok("error" in body);
+      assert.equal(body.error.code, "VALIDATION_ERROR");
+    });
+
+    it("todo is not returned in GET after deletion", async () => {
+      const createRes = await app.inject({
+        method: "POST",
+        url: "/api/todos",
+        payload: { text: "Will be deleted" },
+      });
+      const { data: created } = createRes.json();
+
+      await app.inject({ method: "DELETE", url: `/api/todos/${created.id}` });
+
+      const getResponse = await app.inject({ method: "GET", url: "/api/todos" });
+      const body = getResponse.json();
+      const ids = body.data.map((t: { id: string }) => t.id);
+      assert.ok(!ids.includes(created.id), "deleted todo should not appear in GET response");
+    });
+  });
+
   describe("GET /api/todos", () => {
     it("returns 200 with empty array when no todos exist", async () => {
       const response = await app.inject({
