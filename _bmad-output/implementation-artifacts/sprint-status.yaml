@@ -36,6 +36,7 @@
 
 generated: 2026-03-16
 last_updated: "2026-03-18"
+# Story 3-4-end-to-end-tests created
 # Dev agent started 3-3-error-state-retry
 # Story 3-3-error-state-retry created
 # Dev agent started 3-2-loading-state
@@ -63,5 +64,5 @@ development_status:
   3-1-empty-state: done
   3-2-loading-state: done
   3-3-error-state-retry: review
-  3-4-end-to-end-tests: backlog
+  3-4-end-to-end-tests: done
   epic-3-retrospective: optional

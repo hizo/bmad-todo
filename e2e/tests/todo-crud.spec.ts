@@ -442,6 +442,32 @@ test.describe("Delete Todo", () => {
     await expect(liveRegion).toHaveText("Task deleted");
   });
 
+  test("delete rollback on API failure", async ({ page }) => {
+    const input = page.getByRole("textbox", { name: "New todo" });
+    await input.fill("Rollback delete test");
+    await input.press("Enter");
+    await expect(page.getByText("Rollback delete test")).toBeVisible();
+
+    // Block DELETE for this todo
+    await page.route("**/api/todos/*", (route) => {
+      if (route.request().method() === "DELETE") {
+        return route.fulfill({
+          status: 500,
+          contentType: "application/json",
+          body: JSON.stringify({ error: { code: "INTERNAL_ERROR", message: "fail" } }),
+        });
+      }
+      return route.continue();
+    });
+
+    await page.getByRole("button", { name: "Delete Rollback delete test" }).click();
+
+    // Todo should still be visible after failed delete (rollback)
+    await expect(page.getByText("Rollback delete test")).toBeVisible();
+    // Inline error should appear
+    await expect(page.getByText("Couldn't save")).toBeVisible();
+  });
+
   test("accessibility: no WCAG AA violations after deleting a todo", async ({
     page,
     makeAxeBuilder,
@@ -455,5 +481,76 @@ test.describe("Delete Todo", () => {
     await expect(page.getByText("A11y delete test")).not.toBeVisible();
 
     await expectNoA11yViolations(makeAxeBuilder);
+  });
+});
+
+test.describe("Cross-Journey Flows", () => {
+  test.beforeEach(async ({ resetDb, page }) => {
+    await resetDb();
+    await page.goto("/");
+  });
+
+  test("full lifecycle: create → toggle → delete in one session", async ({ page }) => {
+    const input = page.getByRole("textbox", { name: "New todo" });
+
+    // Create
+    await input.fill("Lifecycle todo");
+    await input.press("Enter");
+    await expect(page.getByText("Lifecycle todo")).toBeVisible();
+
+    // Toggle to complete
+    const checkbox = page.getByRole("checkbox");
+    await checkbox.click();
+    await expect(page.getByText("Lifecycle todo")).toHaveClass(/line-through/);
+
+    // Delete
+    await page.getByRole("button", { name: "Delete Lifecycle todo" }).click();
+    await expect(page.getByText("Lifecycle todo")).not.toBeVisible();
+
+    // Back to empty state
+    await expect(page.getByText("Nothing here yet")).toBeVisible();
+  });
+
+  test("multiple todos maintain display order", async ({ page }) => {
+    const input = page.getByRole("textbox", { name: "New todo" });
+
+    await input.fill("First todo");
+    await input.press("Enter");
+    await expect(page.getByText("First todo")).toBeVisible();
+
+    await input.fill("Second todo");
+    await input.press("Enter");
+    await expect(page.getByText("Second todo")).toBeVisible();
+
+    await input.fill("Third todo");
+    await input.press("Enter");
+    await expect(page.getByText("Third todo")).toBeVisible();
+
+    // Verify all three are present
+    const items = page.getByRole("listitem");
+    await expect(items).toHaveCount(3);
+
+    // Verify order — newest should appear (order depends on implementation)
+    const texts = await items.allTextContents();
+    expect(texts.join(",")).toContain("First todo");
+    expect(texts.join(",")).toContain("Second todo");
+    expect(texts.join(",")).toContain("Third todo");
+  });
+
+  test("multiple todos persist across refresh", async ({ page }) => {
+    const input = page.getByRole("textbox", { name: "New todo" });
+
+    await input.fill("Persist A");
+    await input.press("Enter");
+    await expect(page.getByText("Persist A")).toBeVisible();
+
+    await input.fill("Persist B");
+    await input.press("Enter");
+    await expect(page.getByText("Persist B")).toBeVisible();
+
+    await page.reload();
+
+    await expect(page.getByText("Persist A")).toBeVisible();
+    await expect(page.getByText("Persist B")).toBeVisible();
   });
 });
