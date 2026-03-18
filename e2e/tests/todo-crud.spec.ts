@@ -34,7 +34,7 @@ test.describe("Todo CRUD", () => {
     const input = page.getByRole("textbox", { name: "New todo" });
     await input.press("Enter");
 
-    await expect(page.getByText(/No todos yet/)).toBeVisible();
+    await expect(page.getByText("Nothing here yet")).toBeVisible();
   });
 
   test("accessibility: no WCAG AA violations on main page", async ({
@@ -151,6 +151,56 @@ test.describe("Toggle Todo Completion", () => {
     // Wait for toggle to complete before running a11y audit
     await expect(page.getByText("Toggle test todo")).toHaveClass(/line-through/);
 
+    await expectNoA11yViolations(makeAxeBuilder);
+  });
+});
+
+test.describe("Empty State", () => {
+  test.beforeEach(async ({ resetDb, page }) => {
+    await resetDb();
+    await page.goto("/");
+  });
+
+  test("empty state shows when no todos", async ({ page }) => {
+    await expect(page.getByText("Nothing here yet")).toBeVisible();
+    await expect(
+      page.getByText("Add your first task above to get started.")
+    ).toBeVisible();
+  });
+
+  test("input is autofocused when empty state is shown", async ({ page }) => {
+    const input = page.getByRole("textbox", { name: "New todo" });
+    await expect(input).toBeFocused();
+  });
+
+  test("empty state transitions to list when first todo is added", async ({ page }) => {
+    await expect(page.getByText("Nothing here yet")).toBeVisible();
+
+    const input = page.getByRole("textbox", { name: "New todo" });
+    await input.fill("My first task");
+    await input.press("Enter");
+
+    await expect(page.getByText("My first task")).toBeVisible();
+    await expect(page.getByText("Nothing here yet")).not.toBeVisible();
+  });
+
+  test("empty state reappears after last todo is deleted", async ({ page }) => {
+    const input = page.getByRole("textbox", { name: "New todo" });
+    await input.fill("Only todo");
+    await input.press("Enter");
+    await expect(page.getByText("Only todo")).toBeVisible();
+
+    await page.getByRole("button", { name: "Delete Only todo" }).click();
+    await expect(page.getByText("Only todo")).not.toBeVisible();
+
+    await expect(page.getByText("Nothing here yet")).toBeVisible();
+  });
+
+  test("accessibility: no WCAG AA violations on empty state", async ({
+    page,
+    makeAxeBuilder,
+  }) => {
+    await page.waitForLoadState("networkidle");
     await expectNoA11yViolations(makeAxeBuilder);
   });
 });

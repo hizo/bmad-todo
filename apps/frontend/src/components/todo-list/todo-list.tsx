@@ -1,5 +1,6 @@
 import type { Todo } from "@bmad-todo/shared";
 import { TodoItem } from "@/components/todo-item/todo-item";
+import { EmptyState } from "@/components/empty-state/empty-state";
 
 interface TodoListProps {
   todos: Todo[];
@@ -9,7 +10,7 @@ interface TodoListProps {
 
 export function TodoList({ todos, onToggle, onDelete }: TodoListProps) {
   if (todos.length === 0) {
-    return <p className="text-center text-sm text-muted-foreground">No todos yet. Add one above!</p>;
+    return <EmptyState />;
   }
 
   return (

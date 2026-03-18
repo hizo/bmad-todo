@@ -25,9 +25,12 @@ describe("TodoList", () => {
     expect(screen.getByText("Walk the dog")).toBeInTheDocument();
   });
 
-  it("renders empty message when todos array is empty", () => {
+  it("renders EmptyState when todos array is empty", () => {
     render(<TodoList todos={[]} onToggle={noop} onDelete={noop} />);
-    expect(screen.getByText(/no todos yet/i)).toBeInTheDocument();
+    expect(screen.getByText("Nothing here yet")).toBeInTheDocument();
+    expect(
+      screen.getByText("Add your first task above to get started.")
+    ).toBeInTheDocument();
   });
 
   it("displays todo text correctly", () => {
