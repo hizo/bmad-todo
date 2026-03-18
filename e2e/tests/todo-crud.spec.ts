@@ -205,6 +205,86 @@ test.describe("Empty State", () => {
   });
 });
 
+test.describe("Loading State", () => {
+  test("loading state has accessible ARIA attributes", async ({ resetDb, page }) => {
+    await resetDb();
+
+    // Delay API response so Suspense fallback (loading state) stays visible
+    await page.route("**/api/todos", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await route.continue();
+    });
+
+    await page.goto("/", { waitUntil: "commit" });
+
+    const loadingRegion = page.locator("[role='status'][aria-busy='true']");
+    await expect(loadingRegion).toBeVisible({ timeout: 5000 });
+    await expect(loadingRegion).toHaveAttribute("aria-busy", "true");
+
+    // Verify skeleton list items are present
+    const skeletonItems = loadingRegion.getByRole("listitem");
+    await expect(skeletonItems).toHaveCount(3);
+
+    // Wait for loading to complete — empty state replaces loading
+    await expect(page.getByText("Nothing here yet")).toBeVisible({ timeout: 10000 });
+  });
+
+  test("accessibility: no WCAG AA violations on loading state", async ({
+    resetDb,
+    page,
+    makeAxeBuilder,
+  }) => {
+    await resetDb();
+
+    // Delay API to capture loading state for a11y audit
+    await page.route("**/api/todos", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await route.continue();
+    });
+
+    await page.goto("/", { waitUntil: "commit" });
+    const loadingRegion = page.locator("[role='status'][aria-busy='true']");
+    await expect(loadingRegion).toBeVisible({ timeout: 5000 });
+
+    await expectNoA11yViolations(makeAxeBuilder);
+  });
+
+  test("no layout shift after load — skeleton matches list dimensions", async ({
+    resetDb,
+    page,
+  }) => {
+    await resetDb();
+
+    // Delay API to measure skeleton dimensions
+    await page.route("**/api/todos", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await route.continue();
+    });
+
+    await page.goto("/", { waitUntil: "commit" });
+    const loadingRegion = page.locator("[role='status'][aria-busy='true']");
+    await expect(loadingRegion).toBeVisible({ timeout: 5000 });
+
+    // Measure skeleton container position and main wrapper dimensions
+    const skeletonBox = await loadingRegion.boundingBox();
+    expect(skeletonBox).not.toBeNull();
+    const mainBefore = await page.locator("main").boundingBox();
+    expect(mainBefore).not.toBeNull();
+
+    // Wait for content to load — empty state replaces loading
+    await expect(page.getByText("Nothing here yet")).toBeVisible({ timeout: 10000 });
+
+    // Measure the same container after content swap
+    const mainAfter = await page.locator("main").boundingBox();
+    expect(mainAfter).not.toBeNull();
+
+    // The main container should not have shifted position
+    expect(mainAfter!.x).toBeCloseTo(mainBefore!.x, 0);
+    expect(mainAfter!.y).toBeCloseTo(mainBefore!.y, 0);
+    expect(mainAfter!.width).toBeCloseTo(mainBefore!.width, 0);
+  });
+});
+
 test.describe("Delete Todo", () => {
   test.beforeEach(async ({ resetDb, page }) => {
     await resetDb();
