@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "test": "pnpm -r run test",
+    "test:coverage": "pnpm -r run test:coverage",
     "test:backend": "pnpm --filter @bmad-todo/backend test",
     "test:frontend": "pnpm --filter @bmad-todo/frontend test",
     "test:e2e": "playwright test --config e2e/playwright.config.ts",

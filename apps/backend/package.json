@@ -10,6 +10,7 @@
     "migrate": "node-pg-migrate up --migration-file-language ts --migrations-dir src/migrations --envPath ../../.env",
     "migrate:down": "node-pg-migrate down --migration-file-language ts --migrations-dir src/migrations --envPath ../../.env",
     "test": "dotenv -e ../../.env.test -e ../../.env -- node --test --import tsx/esm src/**/*.test.ts",
+    "test:coverage": "dotenv -e ../../.env.test -e ../../.env -- c8 --include=src --exclude='**/*.test.ts' --reporter=text --reporter=html --reports-dir=./coverage node --test --import tsx/esm src/**/*.test.ts",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix"
   },
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/pg": "^8.11.0",
+    "c8": "^11.0.0",
     "eslint": "^9.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
